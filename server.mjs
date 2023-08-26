@@ -262,6 +262,7 @@ async function viewManager() {
   `;
 
   const [rows, fields] = await db.query(query, [managerView.managerId]);
+  
   console.table(rows);
 }
 
@@ -269,17 +270,20 @@ async function viewByDpt() {
   const dptView = await inquirer.prompt([
     {
       type: 'input', 
-      name: 'managerId',
-      message: 'What is the id of the manager whos employees you would like to view?'
+      name: 'departmentName',
+      message: 'What is the name of the department whos employees you would like to view?'
     },
     
   ])
   const query = `
-  SELECT first_name, last_name, role_id FROM employee
-  WHERE manager_id = ?
+  SELECT employee.first_name, employee.last_name, employee.role_id, employee.manager_id
+  FROM employee
+  JOIN role ON employee.role_id = role.id
+  JOIN department ON role.department_id = department.id
+  WHERE department.name = ?
   `;
 
-  const [rows, fields] = await db.query(query, [managerView.managerId]);
+  const [rows, fields] = await db.query(query, [dptView.departmentName]);
   console.table(rows);
 }
 
@@ -345,9 +349,39 @@ async function deleteEmployee() {
 }
 
 async function budget() {
+  const sumBudget = await inquirer.prompt([
+    {
+      type: 'input', 
+      name: 'name',
+      message: 'What is the name of the department whos budget you would like to view?'
+    }
+  ])
+  const query = `
+  SELECT department.name, SUM(role.salary) AS total_budget 
+  FROM department
+  JOIN role on department.id = role.department_id
+  JOIN employee ON role.id = employee.role_id
+  where department.name = ?
+  GROUP BY department.id
+  `;
+
+  const [rows, fields] = await db.query(query, [sumBudget.name]);
+  console.table(rows);
+
   
 }
 
 firstPrompt().catch(error => {
   console.error('An error occurred:', error)
 });
+
+
+
+
+// counts the employees of a given deparment
+// SELECT department.name, count(employee.id)
+// FROM department
+// LEFT JOIN role ON department.id = role.department_id
+// LEFT JOIN employee ON role.id = employee.role_id
+// WHERE department.name = "Development"
+// GROUP BY department.id

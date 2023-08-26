@@ -1,5 +1,5 @@
 import express from 'express'
-import mysql from 'mysql2';
+import mysql from 'mysql2/promise';
 import inquirer from 'inquirer'
 
 const PORT = process.env.PORT || 3001;
@@ -8,7 +8,7 @@ const app = express();
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
-const db = mysql.createConnection(
+const db = await mysql.createConnection(
   {
     host: 'localhost',
     user: 'root',
@@ -19,20 +19,22 @@ const db = mysql.createConnection(
 );
 
 
+
+
 async function firstPrompt(){
   while (true) {
 const {accessDb} = await inquirer.prompt([
     {type: "list",
      name: "accessDb",
      message: "What would you like to access in the database? (Use arrow keys to navigate)",
-     choices: ["View all departments", "View all roles", "View all employees", "Add a department", "Add a role", "Add an employee", "Update an employee role"]
+     choices: ["View all departments", "View all roles", "View all employees", "Add a department", "Add a role", "Add an employee", "Update an employee role", 'Update employee manager', 'View employees by manager','View employees by department', 'Delete a department', 'Delete a role', 'Delete an employee', 'View the budget of a department',  "Exit" ]
     
   }
   ])
-  switch (action) {
+  switch (accessDb) {
 
       case 'View all departments':
-      await viewAllDepartments();
+      await viewAllDepartments(accessDb);
       break;
 
       case 'View all roles':
@@ -56,25 +58,165 @@ const {accessDb} = await inquirer.prompt([
       break;
 
       case 'Update an employee role':
-      await updateEmployee();
+      await updateEmployeeRole();
       break;
+
+      case 'Update employee manager':
+      await updateManager();
+      break;
+
+      case 'View employees by manager':
+      await viewManager();
+      break;
+
+      case 'View employees by department':
+      await viewByDpt();
+      break;
+
+      case 'Delete a department':
+      await deleteDpt();
+      break;
+
+      case 'Delete a role':
+      await deleteRole();
+      break;
+
+      case 'Delete an employee':
+      await deleteEmployee();
+      break; 
+
+      case 'View the budget of a department':
+      await budget();
+      break;
+
     
+      case 'Exit':
+      console.log("Goodbye");
+      return;
   }}
 }
 
-async function viewAllEmployees() {
- 
+async function viewAllDepartments(accessDb) {
+  const [rows, fields] = await db.execute('SELECT * FROM department');
+  console.log(rows);
 }
 
-async function viewAllDepartments() {
-  
+async function viewAllRoles(){
+  const [rows, fields] = await db.execute('SELECT * FROM role');
+  console.log(rows);
 }
+
+async function viewAllEmployees() {
+  const [rows, fields] = await db.execute('SELECT * FROM employee');
+  console.log(rows);
+}
+
 
 async function addDepartment() {
+  const newDepartment = await inquirer.prompt([
+    {
+      type: 'input', 
+      name: 'newDpt',
+      message: 'What is the name of the new department? (name not to exceed 30 characters!)'
+    }
+  ])
+  const query = `
+  INSERT INTO department (name)
+  VALUES(?)`;
+
+  const result = await db.execute(query, [newDepartment.newDpt]);
+  console.log('New department added!');
   
+
+}
+
+async function addRole() {
+  const newRole = await inquirer.prompt([
+    {
+      type: 'input', 
+      name: 'title',
+      message: 'What is the name of the new Role? (name not to exceed 30 characters!)'
+    },
+    {
+      type: 'input', 
+      name: 'salary',
+      message: 'What is the salary for the new Role? '
+    },
+    {
+      type: 'input', 
+      name: 'department_id',
+      message: 'What is the id of the department that this role will belong to? '
+    }
+  ])
+  const query = `
+  INSERT INTO role (title, salary, department_id)
+  VALUES(?, ?, ?)`;
+
+  const result = await db.execute(query, [newRole.title, newRole.salary, newRole.department_id]);
+  console.log('New role added!');
 }
 
 async function addEmployee() {
+  const newEmployee = await inquirer.prompt([
+    {
+      type: 'input', 
+      name: 'first_name',
+      message: 'What is the first name of the new employee? (name not to exceed 50 characters!)'
+    },
+    {
+      type: 'input', 
+      name: 'last_name',
+      message: 'What is the last name of the new employee? (name not to exceed 50 characters!)'
+    },
+    {
+      type: 'input', 
+      name: 'role_id',
+      message: 'What is the id of the role that this employee will belong to? '
+    },
+    {
+      type: 'input', 
+      name: 'manager_id',
+      message: 'What is the id of this employees manager? If the employee will not have a manager, please enter null. '
+    }
+  ])
+  const query = `
+  INSERT INTO employee (first_name, last_name, role_id, manager_id)
+  VALUES(?, ?, ?, ?)`;
+
+  const result = await db.execute(query, [newEmployee.first_name, newEmployee.last_name, newEmployee.role_id, newEmployee.manager_id]);
+  console.log('New employee added!');
+}
+
+async function updateEmployeeRole(){
+
+
+}
+
+async function updateManager() {
+  
+}
+
+async function viewManager() {
+  
+}
+
+async function viewByDpt() {
+  
+}
+
+async function deleteDpt() {
+  
+}
+
+async function deleteRole() {
+  
+}
+
+async function deleteEmployee() {
+  
+}
+
+async function budget() {
   
 }
 

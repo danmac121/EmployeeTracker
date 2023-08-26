@@ -176,14 +176,17 @@ async function addEmployee() {
     {
       type: 'input', 
       name: 'manager_id',
-      message: 'What is the id of this employees manager? If the employee will not have a manager, please enter null. '
+      message: 'What is the id of this employees manager? If the employee will not have a manager just press enter. '
     }
   ])
+// because inquirer returns "" if the user does not enter anything on an input we must convert the empty string to the value null before passing it to the db query. 
+// the code below is checking if the user input for newEmployee.manager_id returns an empty string. the ? sets up an if true vs if false statement divided by the : so if its true that newEmployee.manager_id is an empty string, set the constant to null, if false then set the constant to the user input
+  const managerId = newEmployee.manager_id === "" ? null : newEmployee.manager_id;
   const query = `
   INSERT INTO employee (first_name, last_name, role_id, manager_id)
   VALUES(?, ?, ?, ?)`;
 
-  const result = await db.execute(query, [newEmployee.first_name, newEmployee.last_name, newEmployee.role_id, newEmployee.manager_id]);
+  const result = await db.execute(query, [newEmployee.first_name, newEmployee.last_name, newEmployee.role_id, managerId]);
   console.log('New employee added!');
 }
 
@@ -205,15 +208,64 @@ async function viewByDpt() {
 }
 
 async function deleteDpt() {
-  
+  const removeDpt = await inquirer.prompt([
+    {
+      type: 'input', 
+      name: 'name',
+      message: 'What is the name of the department you would like to delete?'
+    }
+  ])
+  const query = `
+  DELETE FROM department 
+  where name = ?
+  `;
+
+  const result = await db.query(query, [removeDpt.name]);
+  console.log('Chosen department removed!');
 }
 
 async function deleteRole() {
-  
+  const removeRole = await inquirer.prompt([
+    {
+      type: 'input', 
+      name: 'name',
+      message: 'What is the name of the role you would like to delete?'
+    }
+  ])
+  const query = `
+  DELETE FROM role 
+  where title = ?
+  `;
+
+  const result = await db.query(query, [removeRole.name]);
+  console.log('Chosen role removed!');
 }
 
 async function deleteEmployee() {
-  
+  const removeEmployee = await inquirer.prompt([
+    {
+      type: 'input', 
+      name: 'firstName',
+      message: 'What is the first name of the employee you would like to delete?'
+    },
+    {
+      type: 'input', 
+      name: 'lastName',
+      message: 'What is the last name of the employee you would like to delete?'
+    },
+    {
+      type: 'input', 
+      name: 'roleID',
+      message: 'What is the role id of the employee you would like to delete?'
+    }
+  ])
+  const query = `
+  DELETE FROM employee 
+  where first_name = ? AND last_name = ? AND role_id = ?
+  `;
+
+  const result = await db.query(query, [removeEmployee.firstName, removeEmployee.lastName, removeEmployee.roleID]);
+  console.log('Chosen employee removed!'); 
 }
 
 async function budget() {

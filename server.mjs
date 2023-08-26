@@ -98,17 +98,17 @@ const {accessDb} = await inquirer.prompt([
 
 async function viewAllDepartments(accessDb) {
   const [rows, fields] = await db.execute('SELECT * FROM department');
-  console.log(rows);
+  console.table(rows);
 }
 
 async function viewAllRoles(){
   const [rows, fields] = await db.execute('SELECT * FROM role');
-  console.log(rows);
+  console.table(rows);
 }
 
 async function viewAllEmployees() {
   const [rows, fields] = await db.execute('SELECT * FROM employee');
-  console.log(rows);
+  console.table(rows);
 }
 
 
@@ -191,20 +191,96 @@ async function addEmployee() {
 }
 
 async function updateEmployeeRole(){
+  const updateEmpRole = await inquirer.prompt([
+    {
+      type: 'input', 
+      name: 'first_name',
+      message: 'What is the first name of the employee whos role you would like to update?'
+    },
+    {
+      type: 'input', 
+      name: 'last_name',
+      message: 'What is the last name of the employee whos role you would like to update? '
+    },
+    {
+      type: 'input', 
+      name: 'newRole',
+      message: 'What is the id employees new role? '
+    }
+  ])
+  const query = `
+  UPDATE employee
+  SET role_id = ?
+  WHERE first_name =? AND last_name = ?
+  `;
 
+  const result = await db.execute(query, [updateEmpRole.newRole, updateEmpRole.first_name, updateEmpRole.last_name]);
+  console.log('Employee role updated!');
 
 }
 
 async function updateManager() {
-  
+  const updateEmpManager = await inquirer.prompt([
+    {
+      type: 'input', 
+      name: 'first_name',
+      message: 'What is the first name of the employee whos manager you would like to update?'
+    },
+    {
+      type: 'input', 
+      name: 'last_name',
+      message: 'What is the last name of the employee whos manager you would like to update? '
+    },
+    {
+      type: 'input', 
+      name: 'newManager',
+      message: 'What is the id employees new manager? '
+    }
+  ])
+  const query = `
+  UPDATE employee
+  SET manager_id = ?
+  WHERE first_name =? AND last_name = ?
+  `;
+
+  const result = await db.execute(query, [updateEmpManager.newManager, updateEmpManager.first_name, updateEmpManager.last_name]);
+  console.log('Employee manager updated!');
 }
 
 async function viewManager() {
-  
+  const managerView = await inquirer.prompt([
+    {
+      type: 'input', 
+      name: 'managerId',
+      message: 'What is the id of the manager whos employees you would like to view?'
+    },
+    
+  ])
+  const query = `
+  SELECT first_name, last_name, role_id FROM employee
+  WHERE manager_id = ?
+  `;
+
+  const [rows, fields] = await db.query(query, [managerView.managerId]);
+  console.table(rows);
 }
 
 async function viewByDpt() {
-  
+  const dptView = await inquirer.prompt([
+    {
+      type: 'input', 
+      name: 'managerId',
+      message: 'What is the id of the manager whos employees you would like to view?'
+    },
+    
+  ])
+  const query = `
+  SELECT first_name, last_name, role_id FROM employee
+  WHERE manager_id = ?
+  `;
+
+  const [rows, fields] = await db.query(query, [managerView.managerId]);
+  console.table(rows);
 }
 
 async function deleteDpt() {

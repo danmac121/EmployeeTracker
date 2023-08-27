@@ -194,6 +194,11 @@ async function updateEmployeeRole(){
   const updateEmpRole = await inquirer.prompt([
     {
       type: 'input', 
+      name: 'newRole',
+      message: 'What is the id for the employees new role? '
+    },
+    {
+      type: 'input', 
       name: 'first_name',
       message: 'What is the first name of the employee whos role you would like to update?'
     },
@@ -201,17 +206,12 @@ async function updateEmployeeRole(){
       type: 'input', 
       name: 'last_name',
       message: 'What is the last name of the employee whos role you would like to update? '
-    },
-    {
-      type: 'input', 
-      name: 'newRole',
-      message: 'What is the id employees new role? '
     }
   ])
   const query = `
   UPDATE employee
   SET role_id = ?
-  WHERE first_name =? AND last_name = ?
+  WHERE first_name = ? AND last_name = ?
   `;
 
   const result = await db.execute(query, [updateEmpRole.newRole, updateEmpRole.first_name, updateEmpRole.last_name]);
@@ -377,11 +377,3 @@ firstPrompt().catch(error => {
 
 
 
-
-// counts the employees of a given deparment
-// SELECT department.name, count(employee.id)
-// FROM department
-// LEFT JOIN role ON department.id = role.department_id
-// LEFT JOIN employee ON role.id = employee.role_id
-// WHERE department.name = "Development"
-// GROUP BY department.id

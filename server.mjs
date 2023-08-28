@@ -299,10 +299,18 @@ async function deleteDpt() {
   DELETE FROM department 
   where name = ?
   `;
-
+try{
   const result = await db.query(query, [removeDpt.name]);
-  console.log('Chosen department removed!');
-}
+  console.log('Chosen department removed!');}
+  catch (error){
+    if(error.code === 'ER_ROW_IS_REFERENCED_2'){
+      console.log('Can not delete the selected department because it has roles or employees assigned to it. Please delete any associated employees or roles before attempting to delete the department')
+      
+    }
+    else {
+      console.error('An error occurred', error)
+    }
+}}
 
 async function deleteRole() {
   const removeRole = await inquirer.prompt([
@@ -316,10 +324,18 @@ async function deleteRole() {
   DELETE FROM role 
   where title = ?
   `;
-
+try{
   const result = await db.query(query, [removeRole.name]);
-  console.log('Chosen role removed!');
-}
+  console.log('Chosen role removed!');}
+  catch (error){
+    if(error.code === 'ER_ROW_IS_REFERENCED_2'){
+      console.log('Can not delete the selected role because it has employees assigned to it. Please delete any associated employees before attempting to delete the role.')
+      
+    }
+    else {
+      console.error('An error occurred', error)
+    }
+}}
 
 async function deleteEmployee() {
   const removeEmployee = await inquirer.prompt([
